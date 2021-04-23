@@ -6,14 +6,11 @@ using System.Text;
 using TcpHolePunching;
 using TcpHolePunching.Messages;
 
-namespace Introducer
-{
-    class Program
-    {
+namespace Introducer {
+    class Program {
         private static NetworkIntroducer Introducer { get; set; }
 
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             Console.Title = "Introducer - TCP Hole Punching Proof of Concept";
 
             Introducer = new NetworkIntroducer();
@@ -27,20 +24,15 @@ namespace Introducer
             Console.ReadLine();
         }
 
-        static void Introducer_OnConnectionAccepted(object sender, ConnectionAcceptedEventArgs e)
-        {
+        static void Introducer_OnConnectionAccepted(object sender, ConnectionAcceptedEventArgs e) {
         }
 
-        static void Introducer_OnMessageSent(object sender, MessageSentEventArgs e)
-        {
+        static void Introducer_OnMessageSent(object sender, MessageSentEventArgs e) {
         }
 
-        static void Introducer_OnMessageReceived(object sender, MessageReceivedEventArgs e)
-        {
-            switch (e.MessageType)
-            {
-                case MessageType.RequestIntroducerRegistration:
-                    {
+        static void Introducer_OnMessageReceived(object sender, MessageReceivedEventArgs e) {
+            switch (e.MessageType) {
+                case MessageType.RequestIntroducerRegistration: {
                         var message = new RequestIntroducerRegistrationMessage();
                         message.ReadPayload(e.MessageReader);
 
@@ -50,20 +42,17 @@ namespace Introducer
                         // Get his external endpoint
                         var externalEndPoint = e.From;
 
-                        Introducer.Registrants.Add(new Registrant()
-                                                       {
-                                                           InternalEndPoint = internalEndPoint,
-                                                           ExternalEndPoint = externalEndPoint
-                                                       });
+                        Introducer.Registrants.Add(new Registrant() {
+                            InternalEndPoint = internalEndPoint,
+                            ExternalEndPoint = externalEndPoint
+                        });
 
-                        Introducer.Send(e.From, new ResponseIntroducerRegistrationMessage()
-                                                    {
-                                                        RegisteredEndPoint = e.From
-                                                    });
+                        Introducer.Send(e.From, new ResponseIntroducerRegistrationMessage() {
+                            RegisteredEndPoint = e.From
+                        });
                     }
                     break;
-                case MessageType.RequestIntroducerIntroduction:
-                    {
+                case MessageType.RequestIntroducerIntroduction: {
                         var message = new RequestIntroducerIntroductionMessage();
                         message.ReadPayload(e.MessageReader);
 
@@ -75,20 +64,17 @@ namespace Introducer
                             Introducer.Registrants.First(
                                 registrant => registrant.ExternalEndPoint.Equals(message.ExternalPeerEndPoint));
 
-                        var a = new Registrant()
-                                    {InternalEndPoint = message.InternalOwnEndPoint, ExternalEndPoint = e.From};
+                        var a = new Registrant() { InternalEndPoint = message.InternalOwnEndPoint, ExternalEndPoint = e.From };
 
-                        Introducer.Send(a.ExternalEndPoint, new ResponseIntroducerIntroductionMessage()
-                                                                {
-                                                                    InternalPeerEndPoint = b.InternalEndPoint,
-                                                                    ExternalPeerEndPoint = b.ExternalEndPoint,
-                                                                });
+                        Introducer.Send(a.ExternalEndPoint, new ResponseIntroducerIntroductionMessage() {
+                            InternalPeerEndPoint = b.InternalEndPoint,
+                            ExternalPeerEndPoint = b.ExternalEndPoint,
+                        });
 
-                        Introducer.Send(b.ExternalEndPoint, new ResponseIntroducerIntroductionMessage()
-                                                                {
-                                                                    InternalPeerEndPoint = a.InternalEndPoint,
-                                                                    ExternalPeerEndPoint = a.ExternalEndPoint,
-                                                                });
+                        Introducer.Send(b.ExternalEndPoint, new ResponseIntroducerIntroductionMessage() {
+                            InternalPeerEndPoint = a.InternalEndPoint,
+                            ExternalPeerEndPoint = a.ExternalEndPoint,
+                        });
                     }
                     break;
             }

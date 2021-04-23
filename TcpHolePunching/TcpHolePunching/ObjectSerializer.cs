@@ -433,7 +433,7 @@ namespace TcpHolePunching
 
 			byte[] data = reader.ReadBytes();
 			using (MemoryStream stream = new MemoryStream (data))
-				return new BinaryFormatter().Deserialize (stream, null);
+				return new BinaryFormatter().Deserialize (stream);
 		}
 		
 		private void SerializableSerializer (IValueWriter writer, object value)

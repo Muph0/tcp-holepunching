@@ -5,15 +5,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using TcpHolePunching;
 using TcpHolePunching.Messages;
 
-namespace Peer
-{
-    public class Program
-    {
+namespace Peer {
+    public class Program {
         private static NetworkPeer IntroducerSocket { get; set; }
         private static NetworkPeer ListenSocket { get; set; }
         private static NetworkPeer ConnectSocketInternal { get; set; }
@@ -21,8 +19,7 @@ namespace Peer
 
         private static int PORT = 53472;
 
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             Console.Title = "Peer - TCP Hole Punching Proof of Concept";
 
             ListenSocket = new NetworkPeer();
@@ -39,40 +36,36 @@ namespace Peer
 
             IntroducerSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
 
-            Console.Write("Endpoint of the introducer (try 50.18.245.235:1618): ");
+            string defaultEp = "192.168.7.7";
+            Console.Write($"Endpoint of the introducer (try {defaultEp}): ");
 
             var input = Console.ReadLine();
-            input = (String.IsNullOrEmpty(input)) ? "50.18.245.235:1618" : input;
-            var introducerEndpoint = input.Parse();
+            input = (String.IsNullOrEmpty(input)) ? defaultEp : input;
+            var introducerEndpoint = input.Parse(1618);
 
             Console.WriteLine(String.Format("Connecting to the Introducer at {0}:{1}...", introducerEndpoint.Address, introducerEndpoint.Port));
             IntroducerSocket.Connect(introducerEndpoint.Address, introducerEndpoint.Port);
 
-            Application.Run();
+            var mre = new ManualResetEvent(false);
+            mre.WaitOne();
         }
 
-        static void Peer_OnConnectionAccepted(object sender, ConnectionAcceptedEventArgs e)
-        {
+        static void Peer_OnConnectionAccepted(object sender, ConnectionAcceptedEventArgs e) {
             Console.WriteLine();
         }
 
-        static void PeerOnConnectionSuccessful(object sender, ConnectionAcceptedEventArgs e)
-        {
+        static void PeerOnConnectionSuccessful(object sender, ConnectionAcceptedEventArgs e) {
             Console.WriteLine();
             Console.WriteLine("Requesting to register with the Introducer...");
-            IntroducerSocket.Send(new RequestIntroducerRegistrationMessage() { InternalClientEndPoint = (IPEndPoint) e.Socket.LocalEndPoint} );
+            IntroducerSocket.Send(new RequestIntroducerRegistrationMessage() { InternalClientEndPoint = (IPEndPoint)e.Socket.LocalEndPoint });
         }
 
-        static void PeerOnMessageSent(object sender, MessageSentEventArgs e)
-        {
+        static void PeerOnMessageSent(object sender, MessageSentEventArgs e) {
         }
 
-        static void Peer_OnMessageReceived(object sender, MessageReceivedEventArgs e)
-        {
-            switch (e.MessageType)
-            {
-                case MessageType.ResponseIntroducerRegistration:
-                    {
+        static void Peer_OnMessageReceived(object sender, MessageReceivedEventArgs e) {
+            switch (e.MessageType) {
+                case MessageType.ResponseIntroducerRegistration: {
                         var message = new ResponseIntroducerRegistrationMessage();
                         message.ReadPayload(e.MessageReader);
 
@@ -83,11 +76,10 @@ namespace Peer
                         var peerEndPoint = Console.ReadLine().Parse();
 
                         Console.WriteLine(String.Format("Requesting an introduction to {0}:{1}...", peerEndPoint.Address, peerEndPoint.Port));
-                        IntroducerSocket.Send(new RequestIntroducerIntroductionMessage() { InternalOwnEndPoint = (IPEndPoint) IntroducerSocket.Socket.LocalEndPoint, ExternalPeerEndPoint = peerEndPoint} );
+                        IntroducerSocket.Send(new RequestIntroducerIntroductionMessage() { InternalOwnEndPoint = (IPEndPoint)IntroducerSocket.Socket.LocalEndPoint, ExternalPeerEndPoint = peerEndPoint });
                     }
                     break;
-                case MessageType.ResponseIntroducerIntroduction:
-                    {
+                case MessageType.ResponseIntroducerIntroduction: {
                         var message = new ResponseIntroducerIntroductionMessage();
                         message.ReadPayload(e.MessageReader);
 
