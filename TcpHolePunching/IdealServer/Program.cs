@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using TcpHolePunching;
 using TcpHolePunching.Messages;
 
@@ -50,7 +49,8 @@ namespace IdealServer
 
             Console.ReadLine();
 
-            Application.Run();
+            var mre = new System.Threading.ManualResetEvent(false);
+            mre.WaitOne();
         }
     }
 }

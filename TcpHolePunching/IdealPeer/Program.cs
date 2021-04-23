@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using TcpHolePunching;
 using TcpHolePunching.Messages;
 
@@ -45,7 +44,8 @@ namespace IdealClient
             Console.ReadLine();
             Peer.Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.IpTimeToLive, 4);
 
-            Application.Run();
+            var mre = new System.Threading.ManualResetEvent(false);
+            mre.WaitOne();
         }
 
         static void Peer_OnConnectionAccepted(object sender, ConnectionAcceptedEventArgs e)
